@@ -180,7 +180,8 @@ XXXXX")))
 
 (defun art->skype (art char smiley)
   (replace-regexp-in-string char  smiley
-                            (replace-regexp-in-string " " (skype-art-empty-space) art)))
+                            (replace-regexp-in-string " " (skype-art-empty-space) art)
+                            t))
 
 (defun string->art (str)
   (foo str (lambda (ch)
