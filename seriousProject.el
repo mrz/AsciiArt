@@ -156,6 +156,11 @@ XXXXX
  X
 XXXXX")))
 
+(defvar smiley-size 5
+  "The size in spaces of a smiley")
+
+(defun skype-art-empty-space () (s-repeat smiley-size " "))
+
 (defun transform (letter)
     (cdr (assoc letter letters)))
 
@@ -168,13 +173,14 @@ XXXXX")))
     (replace-regexp " " "     " nil start m)
     (replace-regexp "X" smiley nil start m)))
 
+
 (defun string-for-skype(s smiley)
   (replace-regexp-in-string "X" smiley
-                            (replace-regexp-in-string " " "     " s)))
+                            (replace-regexp-in-string " " (skype-art-empty-space) s)))
 
 (defun art->skype (art char smiley)
   (replace-regexp-in-string char  smiley
-                            (replace-regexp-in-string " " "     " art)))
+                            (replace-regexp-in-string " " (skype-art-empty-space) art)))
 
 (defun string->art (str)
   (foo str (lambda (ch)
@@ -204,18 +210,23 @@ XXXXX")))
     (s-join "\n" (mapcar (lambda (l) (s-pad-right n " " l))
                          (s-split "\n" art)))))
 
-(defun art-concat (art-1 art-2)
+(defun art-concat (spacing art-1 art-2)
   (s-join "\n"
           (mapcar* (lambda (l1 l2)
-                     (concat l1 "  " l2))
+                     (concat l1 (s-repeat spacing " ") l2))
                    (s-split "\n" (pad-art art-1))
                    (s-split "\n" (pad-art art-2)))))
 
-(defun string->horizontal-art (str)
-  (reduce 'art-concat (mapcar (lambda (ch)
-                                (pad-art (cdr (assoc (intern (upcase (string ch))) letters))))
-                              str)))
+(defun string->horizontal-art (str spacing)
+  (reduce (lambda (a1 a2)
+            (art-concat spacing a1 a2))
+          (mapcar (lambda (ch)
+                    (pad-art (cdr (assoc (intern (upcase (string ch))) letters))))
+                  str)))
 
-(defun skype-horizontal-art (sentence smiley)
-  (interactive "sSentence: \nsSmiley: ")
-  (kill-new (art->skype (string->horizontal-art sentence) "X" smiley)))
+(defun skype-horizontal-art (arg sentence smiley)
+  (interactive "p\nsSentence: \nsSmiley: ")
+  (let ((spacing (if (= arg 4)
+                     (string-to-int (read-from-minibuffer "Spacing: "))
+                   1)))
+    (kill-new (art->skype (string->horizontal-art sentence spacing) "X" smiley))))
